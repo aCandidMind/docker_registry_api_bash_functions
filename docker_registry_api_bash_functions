@@ -102,7 +102,7 @@ function get_docker_registry_api_token() {
       # Verify the syntax of the Docker Repository, it must be prefixed with "username/", library/ or dockerstorestaging/
       ######################################################################################################################################################
       if [[ $DOCKER_REPO != */* ]]; then
-            printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or sdockerstorestaging/)!\n' >&2
+            printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
             return 1
       fi
       
@@ -113,7 +113,8 @@ function get_docker_registry_api_token() {
       if [[ -z $DOCKER_REGISTRY_API_AUTH_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_AUTH_ENDPOINT='https://auth.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_AUTH_ENDPOINT:0:8}" != "https://" ]]; then
-            DOCKER_REGISTRY_API_AUTH_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
+            printf '\nThe DOCKER_REGISTRY_API_AUTH_ENDPOINT environment variable must start with https://\n' >&2
+            return 1
       fi
       shopt -u nocasematch
     
@@ -167,7 +168,8 @@ function get_docker_repo_tags() {
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
-            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_QUERY_ENDPOINT}"
+            printf '\nThe DOCKER_REGISTRY_API_QUERY_ENDPOINT environment variable must start with https://\n' >&2
+            return 1
       fi
       shopt -u nocasematch
 
@@ -215,7 +217,7 @@ function get_docker_image_digest() {
       # Verify the syntax of the Docker Repository, it must be prefixed with "username/", library/ or dockerstorestaging/
       ######################################################################################################################################################
       if [[ $DOCKER_REPO != */* ]]; then
-            printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or sdockerstorestaging/)!\n' >&2
+            printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
             return 1
       fi
 
@@ -240,7 +242,8 @@ function get_docker_image_digest() {
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
-            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_QUERY_ENDPOINT}"
+            printf '\nThe DOCKER_REGISTRY_API_QUERY_ENDPOINT environment variable must start with https://\n' >&2
+            return 1
       fi
       shopt -u nocasematch    
       
@@ -289,7 +292,7 @@ function get_docker_image_manifest() {
       # Verify the syntax of the Docker Repository, it must be prefixed with "username/", library/ or dockerstorestaging/
       ######################################################################################################################################################
       if [[ $DOCKER_REPO != */* ]]; then
-            printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or sdockerstorestaging/)!\n' >&2
+            printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
             return 1
       fi
 
@@ -314,7 +317,8 @@ function get_docker_image_manifest() {
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
-            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_QUERY_ENDPOINT}"
+            printf '\nThe DOCKER_REGISTRY_API_QUERY_ENDPOINT environment variable must start with https://\n' >&2
+            return 1
       fi
       shopt -u nocasematch 
 
@@ -396,7 +400,8 @@ function get_docker_image_config_blob() {
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
-            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_QUERY_ENDPOINT}"
+            printf '\nThe DOCKER_REGISTRY_API_QUERY_ENDPOINT environment variable must start with https://\n' >&2
+            return 1
       fi
       shopt -u nocasematch 
 
