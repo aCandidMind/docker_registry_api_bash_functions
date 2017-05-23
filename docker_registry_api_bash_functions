@@ -109,10 +109,14 @@ function get_docker_registry_api_token() {
       ############################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_AUTH_ENDPOINT variable to the Docker Hub Registry https://auth.docker.io if it is not set.
       ############################################################################################################################################################
+      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_API_AUTH_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_AUTH_ENDPOINT='https://auth.docker.io'
+      elif [[ "${DOCKER_REGISTRY_API_AUTH_ENDPOINT:0:8}" != "https://" ]]; then
+            DOCKER_REGISTRY_API_AUTH_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
       fi
-
+      shopt -u nocasematch
+    
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve a token
       ############################################################################################################################################################
@@ -159,9 +163,13 @@ function get_docker_repo_tags() {
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_QUERY_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
       ######################################################################################################################################################
+      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
-      fi      
+      elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
+            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
+      fi
+      shopt -u nocasematch
 
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Tags for the Docker Repository
@@ -228,9 +236,13 @@ function get_docker_image_digest() {
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_QUERY_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
       ######################################################################################################################################################
+      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
-      fi      
+      elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
+            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
+      fi
+      shopt -u nocasematch    
       
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Digest for the Docker Image
@@ -298,9 +310,13 @@ function get_docker_image_manifest() {
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_QUERY_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
       ######################################################################################################################################################
+      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
-      fi      
+      elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
+            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
+      fi
+      shopt -u nocasematch 
 
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Manifest for the Docker Image
@@ -376,9 +392,13 @@ function get_docker_image_config_blob() {
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_QUERY_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
       ######################################################################################################################################################
+      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
-      fi      
+      elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
+            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
+      fi
+      shopt -u nocasematch 
 
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Configuration Blob for the Docker Image
