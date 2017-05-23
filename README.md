@@ -47,16 +47,16 @@ For more information on the Docker Registry HTTP API V2 refer to <https://docs.d
       export DOCKER_PASSWORD="my_docker_registry_user_account_password"
       ```
 
-3. By default the **Docker Registry API Bash Functions** use the following 2 API endpoints which point to the Docker Hub Registry.
+3. By default the **Docker Registry API Bash Functions** use the following 2 endpoints for communicating to the Docker Hub Registry.
 
-      * API Authentication Endpoint: **https://auth.docker.io**
-      * API Query Endpoint: **https://registry-1.docker.io**
+      * Registry Authentication Endpoint: **https://auth.docker.io**
+      * Registry API Endpoint: **https://registry-1.docker.io**
 
     They can be overridden to use a private Docker Registry by setting the 2 Bash environment variables below:
 
       ```bash
-      export DOCKER_REGISTRY_API_AUTH_ENDPOINT="https://my_docker_registry_api_authentication_endpoint"
-      export DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://my_docker_registry_api_query_endpoint"
+      export DOCKER_REGISTRY_AUTH_ENDPOINT="https://my_docker_registry_authentication_endpoint"
+      export DOCKER_REGISTRY_API_ENDPOINT="https://my_docker_registry_api_enpoint"
       ```
 
 3. Source the **Docker Registry API Bash Functions** file **docker_registry_api_bash_functions**. Assuming that the file **docker_registry_api_bash_functions** is in the current directory:
