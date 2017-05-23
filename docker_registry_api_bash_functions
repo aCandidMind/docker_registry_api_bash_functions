@@ -164,11 +164,13 @@ function get_docker_repo_tags() {
       # Set the DOCKER_REGISTRY_API_QUERY_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
       ######################################################################################################################################################
       shopt -s nocasematch
+      set -x
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_QUERY_ENDPOINT}"
       fi
+      set +x
       shopt -u nocasematch
 
       ############################################################################################################################################################
