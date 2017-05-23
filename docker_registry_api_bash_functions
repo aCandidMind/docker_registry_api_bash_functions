@@ -167,7 +167,7 @@ function get_docker_repo_tags() {
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
-            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
+            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_QUERY_ENDPOINT}"
       fi
       shopt -u nocasematch
 
@@ -240,7 +240,7 @@ function get_docker_image_digest() {
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
-            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
+            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_QUERY_ENDPOINT}"
       fi
       shopt -u nocasematch    
       
@@ -314,7 +314,7 @@ function get_docker_image_manifest() {
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
-            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
+            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_QUERY_ENDPOINT}"
       fi
       shopt -u nocasematch 
 
@@ -396,7 +396,7 @@ function get_docker_image_config_blob() {
       if [[ -z $DOCKER_REGISTRY_API_QUERY_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_QUERY_ENDPOINT='https://registry-1.docker.io'
       elif [[ "${DOCKER_REGISTRY_API_QUERY_ENDPOINT:0:8}" != "https://" ]]; then
-            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_AUTH_ENDPOINT}"
+            DOCKER_REGISTRY_API_QUERY_ENDPOINT="https://${DOCKER_REGISTRY_API_QUERY_ENDPOINT}"
       fi
       shopt -u nocasematch 
 
