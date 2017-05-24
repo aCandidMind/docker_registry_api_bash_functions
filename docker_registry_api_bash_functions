@@ -109,19 +109,17 @@ function get_docker_registry_api_token() {
       ############################################################################################################################################################
       # Set the DOCKER_REGISTRY_AUTH_ENDPOINT variable to the Docker Hub Registry https://auth.docker.io if it is not set.
       ############################################################################################################################################################
-      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_AUTH_ENDPOINT ]]; then
             DOCKER_REGISTRY_AUTH_ENDPOINT='https://auth.docker.io'
-      elif [[ "${DOCKER_REGISTRY_AUTH_ENDPOINT:0:8}" != "https://" ]]; then
+      elif [[ $(tr '[:upper:]' '[:lower:]' <<< "${DOCKER_REGISTRY_AUTH_ENDPOINT:0:8}") != "https://" ]]; then
             printf '\nThe DOCKER_REGISTRY_AUTH_ENDPOINT environment variable must start with https://\n' >&2
             return 1
       fi
-      shopt -u nocasematch
     
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve a token
       ############################################################################################################################################################
-      local OUTPUT=$(curl --silent --user "${DOCKER_USER}:${DOCKER_PASSWORD}" --write-out "\n%{http_code}" \
+      local OUTPUT=$(curl -S --silent --user "${DOCKER_USER}:${DOCKER_PASSWORD}" --write-out "\n%{http_code}" \
       "${DOCKER_REGISTRY_AUTH_ENDPOINT}"'/token?service=registry.docker.io&scope=repository:'"${DOCKER_REPO}"':pull')
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
       if [[ "$HTTP_CODE" != "200" ]]; then
@@ -164,20 +162,18 @@ function get_docker_repo_tags() {
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
       ######################################################################################################################################################
-      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_API_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
-      elif [[ "${DOCKER_REGISTRY_API_ENDPOINT:0:8}" != "https://" ]]; then
+      elif [[ $(tr '[:upper:]' '[:lower:]' <<< "${DOCKER_REGISTRY_API_ENDPOINT:0:8}") != "https://" ]]; then
             printf '\nThe DOCKER_REGISTRY_API_ENDPOINT environment variable must start with https://\n' >&2
             return 1
       fi
-      shopt -u nocasematch
 
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Tags for the Docker Repository
       ############################################################################################################################################################
       local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json'
-      local OUTPUT=$(curl --silent --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" --write-out "\n%{http_code}" \
+      local OUTPUT=$(curl -S --silent --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" --write-out "\n%{http_code}" \
       "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/tags/list")
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
       if [[ "$HTTP_CODE" != "200" ]]; then
@@ -238,20 +234,18 @@ function get_docker_image_digest() {
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
       ######################################################################################################################################################
-      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_API_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
-      elif [[ "${DOCKER_REGISTRY_API_ENDPOINT:0:8}" != "https://" ]]; then
+      elif [[ $(tr '[:upper:]' '[:lower:]' <<< "${DOCKER_REGISTRY_API_ENDPOINT:0:8}") != "https://" ]]; then
             printf '\nThe DOCKER_REGISTRY_API_ENDPOINT environment variable must start with https://\n' >&2
             return 1
-      fi
-      shopt -u nocasematch    
+      fi  
       
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Digest for the Docker Image
       ############################################################################################################################################################
       local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json'
-      local OUTPUT=$(curl --silent --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}"  --write-out "\n%{http_code}" \
+      local OUTPUT=$(curl -S --silent --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}"  --write-out "\n%{http_code}" \
       -I -X HEAD "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/manifests/${DOCKER_IMAGE_TAG}")
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
       if [[ "$HTTP_CODE" != "200" ]]; then
@@ -313,20 +307,18 @@ function get_docker_image_manifest() {
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
       ######################################################################################################################################################
-      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_API_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
-      elif [[ "${DOCKER_REGISTRY_API_ENDPOINT:0:8}" != "https://" ]]; then
+      elif [[ $(tr '[:upper:]' '[:lower:]' <<< "${DOCKER_REGISTRY_API_ENDPOINT:0:8}") != "https://" ]]; then
             printf '\nThe DOCKER_REGISTRY_API_ENDPOINT environment variable must start with https://\n' >&2
             return 1
-      fi
-      shopt -u nocasematch 
+      fi 
 
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Manifest for the Docker Image
       ############################################################################################################################################################
       local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json'
-      local OUTPUT=$(curl --silent --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" --write-out "\n%{http_code}" \
+      local OUTPUT=$(curl -S --silent --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" --write-out "\n%{http_code}" \
       "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/manifests/${DOCKER_IMAGE_TAG}")
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
       if [[ "$HTTP_CODE" != "200" ]]; then
@@ -396,20 +388,18 @@ function get_docker_image_config_blob() {
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
       ######################################################################################################################################################
-      shopt -s nocasematch
       if [[ -z $DOCKER_REGISTRY_API_ENDPOINT ]]; then
             DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
-      elif [[ "${DOCKER_REGISTRY_API_ENDPOINT:0:8}" != "https://" ]]; then
+      elif [[ $(tr '[:upper:]' '[:lower:]' <<< "${DOCKER_REGISTRY_API_ENDPOINT:0:8}") != "https://" ]]; then
             printf '\nThe DOCKER_REGISTRY_API_ENDPOINT environment variable must start with https://\n' >&2
             return 1
       fi
-      shopt -u nocasematch 
 
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Configuration Blob for the Docker Image
       ############################################################################################################################################################
       local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json'
-      local OUTPUT=$(curl --silent --location --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" --write-out "\n%{http_code}" \
+      local OUTPUT=$(curl -S --silent --location --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" --write-out "\n%{http_code}" \
       "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/blobs/${DOCKER_IMAGE_CONFIG_DIGEST}")
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
       if [[ "$HTTP_CODE" != "200" ]]; then
