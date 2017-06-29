@@ -98,6 +98,8 @@ function get_docker_registry_api_token() {
             return 1
       fi
 
+      local TYPE=$2
+
       ######################################################################################################################################################
       # Verify the syntax of the Docker Repository, it must be prefixed with "username/", library/ or dockerstorestaging/
       ######################################################################################################################################################
@@ -119,8 +121,14 @@ function get_docker_registry_api_token() {
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve a token
       ############################################################################################################################################################
-      local OUTPUT=$(curl -S --silent --user "${DOCKER_USER}:${DOCKER_PASSWORD}" --write-out "\n%{http_code}" \
-      "${DOCKER_REGISTRY_AUTH_ENDPOINT}"'/token?service=registry.docker.io&scope=repository:'"${DOCKER_REPO}"':pull')
+      local CURL_COMMAND="curl -S --silent --user ${DOCKER_USER}:${DOCKER_PASSWORD} --write-out \n%{http_code} ${DOCKER_REGISTRY_AUTH_ENDPOINT}/token?service=registry.docker.io&scope=repository:${DOCKER_REPO}:pull"
+
+      if [[ $TYPE != "" ]]; then
+            CURL_COMMAND="curl -S --silent --user ${DOCKER_USER}:${DOCKER_PASSWORD} --write-out \n%{http_code} ${DOCKER_REGISTRY_AUTH_ENDPOINT}/token?service=registry.docker.io&scope=repository($TYPE):${DOCKER_REPO}:pull"
+      fi            
+
+      local OUTPUT=$($CURL_COMMAND)
+
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
       if [[ "$HTTP_CODE" != "200" ]]; then
             printf 'Unable to get an authorization token!\n' >&2
@@ -145,6 +153,8 @@ function get_docker_repo_tags() {
             return 1
       fi
 
+      local TYPE=$2
+
       ######################################################################################################################################################
       # Strip off the tag in case it was specified.
       ######################################################################################################################################################
@@ -157,7 +167,7 @@ function get_docker_repo_tags() {
       ######################################################################################################################################################
       # Get a Docker Registry API Token
       ######################################################################################################################################################
-      local TOKEN=$(get_docker_registry_api_token "${DOCKER_REPO}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
+      local TOKEN=$(get_docker_registry_api_token "${DOCKER_REPO}" "${TYPE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
 
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
@@ -172,7 +182,7 @@ function get_docker_repo_tags() {
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Tags for the Docker Repository
       ############################################################################################################################################################
-      local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json'
+      local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.plugin.v1+json'
       local OUTPUT=$(curl -S --silent --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" --write-out "\n%{http_code}" \
       "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/tags/list")
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
@@ -200,6 +210,8 @@ function get_docker_image_digest() {
             return 1
       fi    
 
+      local TYPE=$2
+
       ######################################################################################################################################################
       # Verify the syntax of the Docker Image, it must be prefixed with a Docker Repository followed by a tag
       ######################################################################################################################################################
@@ -229,7 +241,7 @@ function get_docker_image_digest() {
       ######################################################################################################################################################
       # Get a Docker Registry API Token
       ######################################################################################################################################################
-      local TOKEN=$(get_docker_registry_api_token "${DOCKER_REPO}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
+      local TOKEN=$(get_docker_registry_api_token "${DOCKER_REPO}" "${TYPE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
 
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
@@ -244,7 +256,7 @@ function get_docker_image_digest() {
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Digest for the Docker Image
       ############################################################################################################################################################
-      local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json'
+      local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.plugin.v1+json'
       local OUTPUT=$(curl -S --silent --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}"  --write-out "\n%{http_code}" \
       -I -X HEAD "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/manifests/${DOCKER_IMAGE_TAG}")
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
@@ -271,7 +283,9 @@ function get_docker_image_manifest() {
       if [[ -z $DOCKER_IMAGE ]]; then
             printf 'You must specify a Docker Image!\n' >&2
             return 1
-      fi    
+      fi 
+
+      local TYPE=$2   
 
       ######################################################################################################################################################
       # Verify the syntax of the Docker Image, it must be prefixed with a Docker Repository followed by a tag
@@ -302,7 +316,7 @@ function get_docker_image_manifest() {
       ######################################################################################################################################################
       # Get a Docker Registry API Token
       ######################################################################################################################################################
-      local TOKEN=$(get_docker_registry_api_token "${DOCKER_REPO}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
+      local TOKEN=$(get_docker_registry_api_token "${DOCKER_REPO}" "${TYPE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
 
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
@@ -317,7 +331,7 @@ function get_docker_image_manifest() {
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Manifest for the Docker Image
       ############################################################################################################################################################
-      local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json'
+      local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.plugin.v1+json'
       local OUTPUT=$(curl -S --silent --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" --write-out "\n%{http_code}" \
       "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/manifests/${DOCKER_IMAGE_TAG}")
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
@@ -344,6 +358,8 @@ function get_docker_image_config_blob() {
             printf 'You must specify a Docker Image!\n' >&2
             return 1
       fi    
+
+      local TYPE=$2
 
       ######################################################################################################################################################
       # Verify the syntax of the Docker Image, it must be prefixed with a Docker Repository followed by a tag
@@ -373,7 +389,7 @@ function get_docker_image_config_blob() {
       ######################################################################################################################################################
       # Get the Manifest for the Docker Image
       ######################################################################################################################################################
-      local OUTPUT=$(get_docker_image_manifest "${DOCKER_IMAGE}"); if [[ $? -ne 0 || -z $OUTPUT ]]; then return 1; fi
+      local OUTPUT=$(get_docker_image_manifest "${DOCKER_IMAGE}" "${TYPE}"); if [[ $? -ne 0 || -z $OUTPUT ]]; then return 1; fi
 
       ######################################################################################################################################################
       # Get the Configuration Digest from the Manifest which is used to retrieve the Configuration Blob fot eh Docker Image
@@ -383,7 +399,7 @@ function get_docker_image_config_blob() {
       ######################################################################################################################################################
       # Get a Docker Registry API Token
       ######################################################################################################################################################
-      local TOKEN=$(get_docker_registry_api_token "${DOCKER_REPO}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
+      local TOKEN=$(get_docker_registry_api_token "${DOCKER_REPO}" "${TYPE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
 
       ######################################################################################################################################################
       # Set the DOCKER_REGISTRY_API_ENDPOINT variable to the Docker Hub Registry https://registry-1.docker.io if it is not set.
@@ -398,7 +414,7 @@ function get_docker_image_config_blob() {
       ############################################################################################################################################################
       # Call the Docker Registry API to retrieve the Configuration Blob for the Docker Image
       ############################################################################################################################################################
-      local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json'
+      local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.plugin.v1+json'
       local OUTPUT=$(curl -S --silent --location --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" --write-out "\n%{http_code}" \
       "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/blobs/${DOCKER_IMAGE_CONFIG_DIGEST}")
       local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
