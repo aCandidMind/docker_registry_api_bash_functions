@@ -156,6 +156,22 @@ Note: You must prefix the Docker Image with **library/** for querying informatio
 sha256:5f4bdc3467537cbbe563e80db2c3ec95d548a9145d64453b06939c4592d67b6d
 ```
 
+#### You can pull the image using the Docker Content Digest
+
+```
+🐳  gforghetti:[~] $ docker image pull ubuntu@sha256:5f4bdc3467537cbbe563e80db2c3ec95d548a9145d64453b06939c4592d67b6d
+```
+
+```
+sha256:5f4bdc3467537cbbe563e80db2c3ec95d548a9145d64453b06939c4592d67b6d: Pulling from library/ubuntu
+6b98dfc16071: Pull complete
+4001a1209541: Pull complete
+6319fc68c576: Pull complete
+b24603670dc3: Pull complete
+97f170c87c6f: Pull complete
+Digest: sha256:5f4bdc3467537cbbe563e80db2c3ec95d548a9145d64453b06939c4592d67b6d
+```
+
 ### To retrieve the Docker Content Digest for the Docker Image "172.16.129.76/gforghetti/tomcat-wildbook:latest" which is in an insecure private Docker Trusted Registry:
 
 #### Example:
