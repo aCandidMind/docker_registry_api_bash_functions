@@ -60,7 +60,7 @@ For more information on the Docker Registry HTTP API V2 refer to <https://docs.d
 
    For more details on Tags refer to <https://docs.docker.com/engine/reference/commandline/image_tag/>.
 
-3. **get_docker_image_digest** - retrieves the *Docker Content Digest* for a Docker Image.
+3. **get_docker_image_content_digest** - retrieves the *Docker Content Digest* for a Docker Image.
 
    For more details on the *Docker Content Digest* refer to <https://docs.docker.com/registry/spec/api/#content-digests>.
 
@@ -87,13 +87,13 @@ Usage: get_docker_repo_tags -r docker-repo [-t {image|plugin}] [-k]
  -k disable SSL verification for an insecure private Docker Trusted Registry
 ```
 
-### get_docker_image_digest
+### get_docker_image_content_digest
 
 ```
-🐳  gforghetti:~:$ get_docker_image_digest -h
+🐳  gforghetti:~:$ get_docker_image_content_digest -h
 ```
 ```
-Usage: get_docker_image_digest -i docker-image [-t {image|plugin}] [-k]
+Usage: get_docker_image_content_digest -i docker-image [-t {image|plugin}] [-k]
  -i is the Docker Image and must be specified.
  -t {image|plugin} Default is image
  -k disable SSL verification for an insecure private Docker Trusted Registry
@@ -140,46 +140,28 @@ Usage: get_docker_image_config_blob -i docker-image [-t {image|plugin}] [-k]
 
 ## Examples
 
-### To retrieve the Digest for the Docker Official Image "ubuntu:latest":
+### To retrieve the Docker Content Digest for the Docker Official Image "ubuntu:latest":
 
 Note: You must prefix the Docker Image with **library/** for querying information on Docker Official Images.
 
 #### Example:
 
 ```
-🐳  gforghetti:~:$ get_docker_image_digest -i library/ubuntu:latest
+🐳  gforghetti:~:$ get_docker_image_content_digest -i library/ubuntu:latest
 ```
 
 #### Output:
 
 ```
-{
-   "DockerContentDigest": "sha256:5f4bdc3467537cbbe563e80db2c3ec95d548a9145d64453b06939c4592d67b6d"
-}
+sha256:5f4bdc3467537cbbe563e80db2c3ec95d548a9145d64453b06939c4592d67b6d
 ```
 
-### To retrieve just the Digest value for my user "gforghetti" Docker Image "apache:latest":
-
-Note: You must prefix the Docker Image with **___username___/** for querying information on user Docker Images.
+### To retrieve the Docker Content Digest for the Docker Image "172.16.129.76/gforghetti/tomcat-wildbook:latest" which is in an insecure private Docker Trusted Registry:
 
 #### Example:
 
 ```
-🐳  gforghetti:~:$ get_docker_image_digest -i gforghetti/apache:latest | jq -r '.DockerContentDigest'
-```
-
-#### Output:
-
-```
-sha256:e18f96591975794252ed09c90bda183ff735f6a226d649099fec347cafbf5770
-```
-
-### To retrieve just the Digest for the Docker Image "172.16.129.76/gforghetti/tomcat-wildbook:latest" which is in an insecure private Docker Trusted Registry:
-
-#### Example:
-
-```
-🐳  gforghetti:~:$ get_docker_image_digest -i 172.16.129.76/gforghetti/tomcat-wildbook:latest -k | jq -r '.DockerContentDigest'
+🐳  gforghetti:~:$ get_docker_image_content_digest -i 172.16.129.76/gforghetti/tomcat-wildbook:latest -k
 ```
 
 #### Output:

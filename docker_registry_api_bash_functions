@@ -283,7 +283,7 @@ function get_docker_repo_tags() {
     ########################################################################################################################################################
     if [[ $DOCKER_REPO = *":"* ]]; then
         printf 'You need to specify a Docker Repo and not a Docker Image with a tag!\n' >&2
-        usage_get_docker_image_digest
+        usage_get_docker_image_content_digest
         return 1
     fi
 
@@ -334,10 +334,10 @@ function get_docker_repo_tags() {
 }
 
 ############################################################################################################################################################
-# Function to display the usage for the get_docker_image_digest() function.
+# Function to display the usage for the get_docker_image_content_digest() function.
 ############################################################################################################################################################
-function usage_get_docker_image_digest() {
-    printf 'Usage: get_docker_image_digest -i docker-image [-t {image|plugin}] [-k]\n' >&2
+function usage_get_docker_image_content_digest() {
+    printf 'Usage: get_docker_image_content_digest -i docker-image [-t {image|plugin}] [-k]\n' >&2
     printf ' -i is the Docker Image and must be specified.\n' >&2
     printf ' -t {image|plugin} Default is image\n' >&2
     printf ' -k disable SSL verification for an insecure private Docker Trusted Registry\n' >&2
@@ -346,7 +346,7 @@ function usage_get_docker_image_digest() {
 ############################################################################################################################################################
 # Function to get the Docker image digest for a Docker image.
 ############################################################################################################################################################
-function get_docker_image_digest() {
+function get_docker_image_content_digest() {
 
     ########################################################################################################################################################
     # Get the command line arguments.
@@ -368,11 +368,11 @@ function get_docker_image_digest() {
                 INSECURE="-k"           
                 ;;    
             h)                                          # -h help
-                usage_get_docker_image_digest
+                usage_get_docker_image_content_digest
                 return 1
                 ;;
             \?)
-                usage_get_docker_image_digest
+                usage_get_docker_image_content_digest
                 return 1
                 ;;
         esac
@@ -387,7 +387,7 @@ function get_docker_image_digest() {
         TYPE=$(echo "$TYPE" | awk '{print tolower($0)}')
         if [[ $TYPE != 'image' && $TYPE != 'plugin' ]]; then
             printf "The type value ${TYPE} is invalid.  Must be image or plugin!\n" >&2
-            usage_get_docker_image_digest
+            usage_get_docker_image_content_digest
             return 1
         fi                
     fi   
@@ -397,7 +397,7 @@ function get_docker_image_digest() {
     ########################################################################################################################################################
     if [[ -z $DOCKER_IMAGE ]]; then
         printf 'You must specify a Docker Image!\n' >&2
-        usage_get_docker_image_digest
+        usage_get_docker_image_content_digest
         return 1
     fi    
 
@@ -407,7 +407,7 @@ function get_docker_image_digest() {
     local DOCKER_REPO=$(echo $DOCKER_IMAGE | awk -F':' '{print $1}')
     if [[ -z $DOCKER_REPO ]]; then
         printf 'You must specify a Docker Repo!\n' >&2
-        usage_get_docker_image_digest
+        usage_get_docker_image_content_digest
         return 1
     fi
 
@@ -416,7 +416,7 @@ function get_docker_image_digest() {
     ########################################################################################################################################################
     if [[ $DOCKER_REPO != */* ]]; then
         printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
-        usage_get_docker_image_digest
+        usage_get_docker_image_content_digest
         return 1
     fi
 
@@ -426,7 +426,7 @@ function get_docker_image_digest() {
     local DOCKER_IMAGE_TAG=$(echo $DOCKER_IMAGE | awk -F':' '{print $2}')
     if [[ -z $DOCKER_IMAGE_TAG ]]; then
         printf '\nYou did not specify a tag for the Docker Image!\n' >&2
-        usage_get_docker_image_digest
+        usage_get_docker_image_content_digest
         return 1
     fi
 
@@ -461,9 +461,9 @@ function get_docker_image_digest() {
         print_docker_registry_api_error "${OUTPUT}"
         return 1
     else
-        # Convert the Docker Image Digest to JSON
-        local DOCKER_IMAGE_DIGEST=$(echo "$OUTPUT" | grep 'Docker-Content-Digest:' | awk '{print $NF}' | sed 's|[[:space:]]*||g')
-        printf "${DOCKER_IMAGE_DIGEST}" | awk 'BEGIN{print "{"} {print "\t\"DockerContentDigest\": \"" $1 "\""} END{print "}"}'
+        # Print out the Docker Image Content Digest
+        local DOCKER_IMAGE_CONTENT_DIGEST=$(echo "$OUTPUT" | grep 'Docker-Content-Digest:' | awk '{print $NF}' | sed 's|[[:space:]]*||g')
+        printf "${DOCKER_IMAGE_CONTENT_DIGEST}\n"
         return 0
     fi
 }
@@ -887,7 +887,7 @@ function get_docker_image_config_blob() {
 export -f check_docker_registry_api_bash_functions_prerequisites
 export -f get_docker_registry_api_token
 export -f get_docker_repo_tags
-export -f get_docker_image_digest
+export -f get_docker_image_content_digest
 export -f get_docker_image_manifest
 export -f get_docker_image_manifests
 export -f get_docker_image_config_blob
