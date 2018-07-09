@@ -602,6 +602,141 @@ function get_docker_image_manifest() {
     fi
 }
 
+
+############################################################################################################################################################
+# Function to display the usage for the get_docker_image_manifests() function.
+############################################################################################################################################################
+function usage_get_docker_image_manifests() {
+    printf 'Usage: get_docker_image_manifests -i docker-image [-t {image|plugin}] [-k]\n' >&2
+    printf ' -i is the Docker Image and must be specified.\n' >&2
+    printf ' -t {image|plugin} Default is image\n' >&2
+    printf ' -k disable SSL verification for an insecure private Docker Trusted Registry\n' >&2
+}
+
+############################################################################################################################################################
+# Function to get the Docker image manifest for a Docker image.
+############################################################################################################################################################
+function get_docker_image_manifests() {
+
+    ########################################################################################################################################################
+    # Get the command line arguments.
+    ########################################################################################################################################################
+    local TYPE='image'
+    local DOCKER_IMAGE=''
+    local INSECURE=''
+
+    local OPTIND opt i t k h
+    while getopts "i:t:kh" opt; do
+        case $opt in
+            i)                                          # -i Docker Image
+                DOCKER_IMAGE=$OPTARG
+                ;;
+            t)                                          # -t image or plugin
+                TYPE=$OPTARG
+                ;;
+            k)                                          # -k insecure 
+                INSECURE="-k"           
+                ;;    
+            h)                                          # -h help
+                usage_get_docker_image_manifests
+                return 1
+                ;;
+            \?)
+                usage_get_docker_image_manifests
+                return 1
+                ;;
+        esac
+    done
+
+    ########################################################################################################################################################
+    # Check the Type. Default to "image" if not specified. If specified, lowercase the value and check it for "image" or "plugin".
+    ########################################################################################################################################################
+    if [[ -z $TYPE ]]; then
+        TYPE='image'
+    else
+        TYPE=$(echo "$TYPE" | awk '{print tolower($0)}')
+        if [[ $TYPE != 'image' && $TYPE != 'plugin' ]]; then
+            printf "The type value ${TYPE} is invalid.  Must be image or plugin!\n" >&2
+            usage_get_docker_image_manifests
+            return 1
+        fi                
+    fi   
+
+    ########################################################################################################################################################
+    # Verify a docker image was specified on the command line.
+    ########################################################################################################################################################
+    if [[ -z $DOCKER_IMAGE ]]; then
+        printf 'You must specify a Docker Image!\n' >&2
+        usage_get_docker_image_manifests
+        return 1
+    fi    
+
+    ########################################################################################################################################################
+    # Verify the syntax of the Docker Image. It must be prefixed with a Docker Repository followed by a tag.
+    ########################################################################################################################################################
+    local DOCKER_REPO=$(echo $DOCKER_IMAGE | awk -F':' '{print $1}')
+    if [[ -z $DOCKER_REPO ]]; then
+        printf 'You must specify a Docker Repo!\n' >&2
+        usage_get_docker_image_manifests
+        return 1
+    fi
+
+    ########################################################################################################################################################
+    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", library/ or dockerstorestaging/
+    ########################################################################################################################################################
+    if [[ $DOCKER_REPO != */* ]]; then
+        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
+        usage_get_docker_image_manifests
+        return 1
+    fi
+
+    ########################################################################################################################################################
+    # Verify the syntax of the Docker Image. It must be suffixed with a tag.
+    ########################################################################################################################################################
+    local DOCKER_IMAGE_TAG=$(echo $DOCKER_IMAGE | awk -F':' '{print $2}')
+    if [[ -z $DOCKER_IMAGE_TAG ]]; then
+        printf '\nYou did not specify a tag for the Docker Image!\n' >&2
+        usage_get_docker_image_manifests
+        return 1
+    fi
+
+    ########################################################################################################################################################
+    # Get a Docker Registry API Token.
+    ########################################################################################################################################################
+    local TOKEN=$(get_docker_registry_api_token -r "${DOCKER_REPO}" -t "${TYPE}" "${INSECURE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
+
+    ########################################################################################################################################################
+    # Check the Docker Repo to see if it's in a private Docker Trusted Registry.
+    ########################################################################################################################################################          
+    local DOCKER_REGISTRY_API_ENDPOINT=''
+    if [[ $(awk -F'/' '{print NF-1}' <<<"$DOCKER_REPO") -eq 2 ]]; then
+        # Private Docker Trusted Registry (Docker Repo contains 2 slashes)
+        DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
+        DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+    else
+        # Docker Hub or Docker Store
+        DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
+    fi
+
+    ########################################################################################################################################################
+    # Call the Docker Registry API to retrieve the Manifests for the Docker Image.
+    ########################################################################################################################################################
+    local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json'
+    local OUTPUT=$(curl -S --silent ${INSECURE} --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" \
+    --write-out "\n%{http_code}" "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/manifests/${DOCKER_IMAGE_TAG}")
+    local HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
+    if [[ "$HTTP_CODE" != "200" ]]; then
+        printf 'Unable to get the Docker Image manifest for the Docker Image %s!\n' "${DOCKER_REPO}:${DOCKER_IMAGE_TAG}" >&2 
+        printf "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/manifests/${DOCKER_IMAGE_TAG}\n" >&2
+        print_docker_registry_api_error "${OUTPUT}"
+        return 1
+    else
+        local DOCKER_IMAGE_MANIFEST=$(echo "$OUTPUT" | awk 'NR > 1 { print prev } { prev = $0 }')
+        printf '%s\n' "${DOCKER_IMAGE_MANIFEST}"
+        return 0
+    fi
+}
+
 ############################################################################################################################################################
 # Function to display the usage for the get_docker_image_config_blob() function.
 ############################################################################################################################################################
@@ -754,4 +889,5 @@ export -f get_docker_registry_api_token
 export -f get_docker_repo_tags
 export -f get_docker_image_digest
 export -f get_docker_image_manifest
+export -f get_docker_image_manifests
 export -f get_docker_image_config_blob
