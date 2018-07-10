@@ -436,6 +436,26 @@ sha256:683abbb4ea60e108164f1d351e7bcf13daf45941137d800086447874df05f48e
 }
 ```
 
+
+### To retrieve the Manifest List for the Docker Official "ubuntu:latest" image and display the OS and Architecture for each entry:
+
+#### Example:
+
+```
+🐳  gforghetti:[~] $ get_docker_image_manifest_list -i library/ubuntu:latest | jq -j '.manifests[].platform | .os,":",.architecture,"\n"'
+```
+
+#### Output:
+
+```
+linux:amd64
+linux:arm
+linux:arm64
+linux:386
+linux:ppc64le
+linux:s390x
+```
+
 ### To retrieve the configuration Blob for the Docker Official "redis:latest" image:
 
 #### Example:
