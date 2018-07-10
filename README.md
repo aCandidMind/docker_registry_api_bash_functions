@@ -66,9 +66,13 @@ For more information on the Docker Registry HTTP API V2 refer to <https://docs.d
 
 4. **get_docker_image_manifest** - retrieves the Manifest for a Docker Image.
 
-   For more details on Manifests refer to <https://docs.docker.com/registry/spec/api/#manifest>.
+   For more details on Manifests refer to https://docs.docker.com/registry/spec/manifest-v2-2/#image-manifest-field-descriptions.
 
-5. **get_docker_image_config_blob** - retrieves the configuration Blob for a Docker Image.
+5. **get_docker_image_manifest_list** - retrieves the Manifest List for a Docker Image (Multi Architecture Support). 
+   If the Docker Image does not have a Manifest list, then the Manifest is returned. 
+   For more details on the Manifest List refer to https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list.
+
+6. **get_docker_image_config_blob** - retrieves the configuration Blob for a Docker Image.
 
    For more details on Blobs refer to <https://docs.docker.com/registry/spec/api/#blob>.
 
@@ -110,20 +114,20 @@ Usage: get_docker_image_manifest -i docker-image [-t {image|plugin}] [-k]
  -i is the Docker Image and must be specified.
  -t {image|plugin} Default is image
  -k disable SSL verification for an insecure private Docker Trusted Registry
- ```
-
-### get_docker_image_manifests (Returns the Fat Manifest - Multi Architecture Support)
-
-```
-🐳  gforghetti:~: $ get_docker_image_manifests -h
 ```
 
+### get_docker_image_manifest_list
+
 ```
-Usage: get_docker_image_manifests -i docker-image [-t {image|plugin}] [-k]
+🐳  gforghetti:~: $ get_docker_image_manifest_list -h
+```
+
+```
+Usage: get_docker_image_manifest_list -i docker-image [-t {image|plugin}] [-k]
  -i is the Docker Image and must be specified.
  -t {image|plugin} Default is image
  -k disable SSL verification for an insecure private Docker Trusted Registry
- ```
+```
 
 ### get_docker_image_config_blob
 
@@ -357,12 +361,12 @@ sha256:683abbb4ea60e108164f1d351e7bcf13daf45941137d800086447874df05f48e
 22496975
 ```
 
-### To retrieve the Fat Docker Image Manifest for the Docker Official "ubuntu:latest" image:
+### To retrieve the Manifest List for the Docker Official "ubuntu:latest" image:
 
 #### Example:
 
 ```
-🐳  gforghetti:[~/Vagrants/ACME-Docker-Solution-Briefs] $ get_docker_image_manifests -i library/ubuntu:latest | jq 'if .mediaType?=="application/vnd.docker.distribution.manifest.list.v2+json" then . else error("Docker Image is Not Multi Architecture!") end'
+🐳  gforghetti:~:$ get_docker_image_manifest_list -i library/ubuntu:latest | jq 'if .mediaType?=="application/vnd.docker.distribution.manifest.list.v2+json" then . else error("Docker Image is Not Multi Architecture!") end'
 ```
 
 #### Output:
