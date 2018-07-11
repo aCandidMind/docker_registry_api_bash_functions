@@ -154,26 +154,33 @@ function get_docker_registry_api_token() {
     fi
 
     ########################################################################################################################################################
-    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", library/ or dockerstorestaging/
+    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", "library/", "store/" or "dockerstorestaging/"
     ########################################################################################################################################################
     if [[ $DOCKER_REPO != */* ]]; then
-        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
+        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or store/ or dockerstorestaging/)!\n' >&2
         usage_get_docker_registry_api_token
         return 1
     fi
       
     ########################################################################################################################################################
-    # Check the Docker Repo to see if it's in a private Docker Trusted Registry.
+    # Check the Docker Repo to see if it's in a private Docker Trusted Registry, library namespace or store namespace
     ########################################################################################################################################################        
     local DOCKER_REGISTRY_AUTH_ENDPOINT=''
     local DOCKER_REGISTRY_SERVICE=''      
     if [[ $(awk -F'/' '{print NF-1}' <<<"$DOCKER_REPO") -eq 2 ]]; then
-        # Private Docker Trusted Registry (Docker Repo contains 2 slashes)
-        DOCKER_REGISTRY_SERVICE=$(echo $DOCKER_REPO | awk -F'/' '{print $1}')
-        DOCKER_REGISTRY_AUTH_ENDPOINT="https://${DOCKER_REGISTRY_SERVICE}/auth"
-        DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        local NAMESPACE=$(echo $DOCKER_REPO | awk -F'/' '{print $1}')
+        if [[ $NAMESPACE == 'library' || $NAMESPACE == 'store' ]]; then
+            # library namespace or store namespace
+            DOCKER_REGISTRY_AUTH_ENDPOINT='https://auth.docker.io'
+            DOCKER_REGISTRY_SERVICE='registry.docker.io'
+        else
+            # Private Docker Trusted Registry
+            DOCKER_REGISTRY_SERVICE=$(echo $DOCKER_REPO | awk -F'/' '{print $1}')
+            DOCKER_REGISTRY_AUTH_ENDPOINT="https://${DOCKER_REGISTRY_SERVICE}/auth"
+            DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        fi            
     else
-        # Docker Hub or Docker Store
+        # Docker Hub user namespace or dockerstorestaging namespace
         DOCKER_REGISTRY_AUTH_ENDPOINT='https://auth.docker.io'
         DOCKER_REGISTRY_SERVICE='registry.docker.io'
     fi
@@ -288,10 +295,10 @@ function get_docker_repo_tags() {
     fi
 
     ########################################################################################################################################################
-    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", library/ or dockerstorestaging/
+    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", "library/", "store/" or "dockerstorestaging/"
     ########################################################################################################################################################
     if [[ $DOCKER_REPO != */* ]]; then
-        printf '\n%sYou did not prefix the Docker Repo with a username (username/, "library/" or "dockerstorestaging/")!%s\n' >&2
+        printf '\n%sYou did not prefix the Docker Repo with a username (username/, library/ store/ or dockerstorestaging/)!%s\n' >&2
         usage_get_docker_repo_tags
         return 1
     fi
@@ -302,15 +309,21 @@ function get_docker_repo_tags() {
     local TOKEN=$(get_docker_registry_api_token -r "${DOCKER_REPO}" -t "${TYPE}" "${INSECURE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
 
     ########################################################################################################################################################
-    # Check the Docker Repo to see if it's in a private Docker Trusted Registry.
+    # Check the Docker Repo to see if it's in a private Docker Trusted Registry, library namespace or store namespace
     ########################################################################################################################################################        
     local DOCKER_REGISTRY_API_ENDPOINT=''
     if [[ $(awk -F'/' '{print NF-1}' <<<"$DOCKER_REPO") -eq 2 ]]; then
-        # Private Docker Trusted Registry (Docker Repo contains 2 slashes)
-        DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
-        DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        local NAMESPACE=$(echo $DOCKER_REPO | awk -F'/' '{print $1}')
+        if [[ $NAMESPACE == 'library' || $NAMESPACE == 'store' ]]; then
+            # library namespace or store namespace
+            DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
+        else
+            # Private Docker Trusted Registry
+            DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
+            DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        fi            
     else
-        # Docker Hub or Docker Store
+        # Docker Hub user namespace or dockerstorestaging namespace
         DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
     fi
 
@@ -412,10 +425,10 @@ function get_docker_image_content_digest() {
     fi
 
     ########################################################################################################################################################
-    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", library/ or dockerstorestaging/
+    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", "library/", "store/" or "dockerstorestaging/"
     ########################################################################################################################################################
     if [[ $DOCKER_REPO != */* ]]; then
-        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
+        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or store/ or dockerstorestaging/)!\n' >&2
         usage_get_docker_image_content_digest
         return 1
     fi
@@ -436,15 +449,21 @@ function get_docker_image_content_digest() {
     local TOKEN=$(get_docker_registry_api_token -r "${DOCKER_REPO}" -t "${TYPE}" "${INSECURE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
 
     ########################################################################################################################################################
-    # Check the Docker Repo to see if it's in a private Docker Trusted Registry.
-    ########################################################################################################################################################          
+    # Check the Docker Repo to see if it's in a private Docker Trusted Registry, library namespace or store namespace
+    ########################################################################################################################################################        
     local DOCKER_REGISTRY_API_ENDPOINT=''
     if [[ $(awk -F'/' '{print NF-1}' <<<"$DOCKER_REPO") -eq 2 ]]; then
-        # Private Docker Trusted Registry (Docker Repo contains 2 slashes)
-        DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
-        DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        local NAMESPACE=$(echo $DOCKER_REPO | awk -F'/' '{print $1}')
+        if [[ $NAMESPACE == 'library' || $NAMESPACE == 'store' ]]; then
+            # library namespace or store namespace
+            DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
+        else
+            # Private Docker Trusted Registry
+            DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
+            DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        fi            
     else
-        # Docker Hub or Docker Store
+        # Docker Hub user namespace or dockerstorestaging namespace
         DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
     fi
       
@@ -547,10 +566,10 @@ function get_docker_image_manifest() {
     fi
 
     ########################################################################################################################################################
-    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", library/ or dockerstorestaging/
+    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", "library/", "store/" or "dockerstorestaging/"
     ########################################################################################################################################################
     if [[ $DOCKER_REPO != */* ]]; then
-        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
+        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or store/ or dockerstorestaging/)!\n' >&2
         usage_get_docker_image_manifest
         return 1
     fi
@@ -571,15 +590,21 @@ function get_docker_image_manifest() {
     local TOKEN=$(get_docker_registry_api_token -r "${DOCKER_REPO}" -t "${TYPE}" "${INSECURE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
 
     ########################################################################################################################################################
-    # Check the Docker Repo to see if it's in a private Docker Trusted Registry.
-    ########################################################################################################################################################          
+    # Check the Docker Repo to see if it's in a private Docker Trusted Registry, library namespace or store namespace
+    ########################################################################################################################################################        
     local DOCKER_REGISTRY_API_ENDPOINT=''
     if [[ $(awk -F'/' '{print NF-1}' <<<"$DOCKER_REPO") -eq 2 ]]; then
-        # Private Docker Trusted Registry (Docker Repo contains 2 slashes)
-        DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
-        DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        local NAMESPACE=$(echo $DOCKER_REPO | awk -F'/' '{print $1}')
+        if [[ $NAMESPACE == 'library' || $NAMESPACE == 'store' ]]; then
+            # library namespace or store namespace
+            DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
+        else
+            # Private Docker Trusted Registry
+            DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
+            DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        fi            
     else
-        # Docker Hub or Docker Store
+        # Docker Hub user namespace or dockerstorestaging namespace
         DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
     fi
 
@@ -682,10 +707,10 @@ function get_docker_image_manifest_list() {
     fi
 
     ########################################################################################################################################################
-    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", library/ or dockerstorestaging/
+    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", "library/", "store/" or "dockerstorestaging/"
     ########################################################################################################################################################
     if [[ $DOCKER_REPO != */* ]]; then
-        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
+        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or store/ or dockerstorestaging/)!\n' >&2
         usage_get_docker_image_manifest_list
         return 1
     fi
@@ -706,15 +731,21 @@ function get_docker_image_manifest_list() {
     local TOKEN=$(get_docker_registry_api_token -r "${DOCKER_REPO}" -t "${TYPE}" "${INSECURE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
 
     ########################################################################################################################################################
-    # Check the Docker Repo to see if it's in a private Docker Trusted Registry.
-    ########################################################################################################################################################          
+    # Check the Docker Repo to see if it's in a private Docker Trusted Registry, library namespace or store namespace
+    ########################################################################################################################################################        
     local DOCKER_REGISTRY_API_ENDPOINT=''
     if [[ $(awk -F'/' '{print NF-1}' <<<"$DOCKER_REPO") -eq 2 ]]; then
-        # Private Docker Trusted Registry (Docker Repo contains 2 slashes)
-        DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
-        DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        local NAMESPACE=$(echo $DOCKER_REPO | awk -F'/' '{print $1}')
+        if [[ $NAMESPACE == 'library' || $NAMESPACE == 'store' ]]; then
+            # library namespace or store namespace
+            DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
+        else
+            # Private Docker Trusted Registry
+            DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
+            DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        fi            
     else
-        # Docker Hub or Docker Store
+        # Docker Hub user namespace or dockerstorestaging namespace
         DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
     fi
 
@@ -816,10 +847,10 @@ function get_docker_image_config_blob() {
     fi
 
     ########################################################################################################################################################
-    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", library/ or dockerstorestaging/
+    # Verify the syntax of the Docker Repository. It must be prefixed with "username/", "library/", "store/" or "dockerstorestaging/"
     ########################################################################################################################################################
     if [[ $DOCKER_REPO != */* ]]; then
-        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or dockerstorestaging/)!\n' >&2
+        printf '\nYou did not prefix the Docker Image with a user name (username/, library/ or store/ or dockerstorestaging/)!\n' >&2
         usage_get_docker_image_config_blob
         return 1
     fi
@@ -850,15 +881,21 @@ function get_docker_image_config_blob() {
     local TOKEN=$(get_docker_registry_api_token -r "${DOCKER_REPO}" -t "${TYPE}" "${INSECURE}"); if [[ $? -ne 0 || -z $TOKEN ]]; then return 1; fi
 
     ########################################################################################################################################################
-    # Check the Docker Repo to see if it's in a private Docker Trusted Registry.
-    ########################################################################################################################################################          
+    # Check the Docker Repo to see if it's in a private Docker Trusted Registry, library namespace or store namespace
+    ########################################################################################################################################################        
     local DOCKER_REGISTRY_API_ENDPOINT=''
     if [[ $(awk -F'/' '{print NF-1}' <<<"$DOCKER_REPO") -eq 2 ]]; then
-        # Private Docker Trusted Registry (Docker Repo contains 2 slashes)
-        DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
-        DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        local NAMESPACE=$(echo $DOCKER_REPO | awk -F'/' '{print $1}')
+        if [[ $NAMESPACE == 'library' || $NAMESPACE == 'store' ]]; then
+            # library namespace or store namespace
+            DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
+        else
+            # Private Docker Trusted Registry
+            DOCKER_REGISTRY_API_ENDPOINT="https://$(echo $DOCKER_REPO | awk -F'/' '{print $1}')"
+            DOCKER_REPO=$(echo $DOCKER_REPO | cut -d'/' -f2-3 | awk -F':' '{print $1}')
+        fi            
     else
-        # Docker Hub or Docker Store
+        # Docker Hub user namespace or dockerstorestaging namespace
         DOCKER_REGISTRY_API_ENDPOINT='https://registry-1.docker.io'
     fi
 
