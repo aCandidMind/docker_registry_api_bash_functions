@@ -965,6 +965,7 @@ function get_docker_image_config_blob() {
 # Export the functions so they are available to sub shells.
 ############################################################################################################################################################
 export -f check_docker_registry_api_bash_functions_prerequisites
+export -f print_docker_registry_api_error
 export -f get_docker_registry_api_token
 export -f get_docker_repo_tags
 export -f get_docker_image_content_digest
