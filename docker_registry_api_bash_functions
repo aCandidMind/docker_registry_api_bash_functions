@@ -73,13 +73,13 @@ function print_docker_registry_api_error() {
     OUTPUT=$(echo "$1" | awk 'NR > 1 { print prev } { prev = $0 }' )
     local ERRORS
     ERRORS=$(echo "${OUTPUT}" | jq -r '.errors[0]?' 2> /dev/null)
-    if [[ ! -z $ERRORS  && $ERRORS != 'null' ]]; then
+    if [[ -n $ERRORS  && $ERRORS != 'null' ]]; then
         ERRORS=$(echo "${OUTPUT}" | jq -r '.errors[0]?.code?, " - ", .errors[0]?.message?' | awk '{printf("%s",$0)}')
         printf 'HTTP_CODE="%s" Error="%s"\n' "${HTTP_CODE}" "${ERRORS}" >&2
     else
         local DETAILS
         DETAILS=$(echo "${OUTPUT}" | jq -r '.details?' 2> /dev/null)
-        if [[ ! -z $DETAILS && $DETAILS != 'null' ]]; then
+        if [[ -n $DETAILS && $DETAILS != 'null' ]]; then
             printf 'HTTP_CODE="%s" Details="%s"\n' "${HTTP_CODE}" "${DETAILS}" >&2
         else
             printf '%s\n' "${OUTPUT}" >&2
