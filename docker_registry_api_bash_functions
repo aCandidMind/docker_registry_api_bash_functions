@@ -112,7 +112,7 @@ function get_docker_registry_api_token() {
     local INSECURE=''
 
     local OPTIND opt r t k h
-    while getopts "r:t:kh" opt; do
+    while getopts ":r:t:kh" opt; do
         case "${opt}" in
             r)                                          # -r Docker Repo
                 DOCKER_REPO=$OPTARG
@@ -128,6 +128,7 @@ function get_docker_registry_api_token() {
                 return 1
                 ;;
             \?)
+                printf 'Invalid option: -%s\n' "${OPTARG}" >&2
                 usage_get_docker_registry_api_token
                 return 1
                 ;;
@@ -142,7 +143,7 @@ function get_docker_registry_api_token() {
     else
         TYPE=$(echo "$TYPE" | awk '{print tolower($0)}')
         if [[ $TYPE != 'image' && $TYPE != 'plugin' ]]; then
-            printf "The type value %s is invalid.  Must be image or plugin!\\n" "${TYPE}" >&2
+            printf 'The type value %s is invalid. Must be image or plugin!\n' "${TYPE}" >&2
             usage_get_docker_registry_api_token
             return 1
         fi                
@@ -198,7 +199,7 @@ function get_docker_registry_api_token() {
     else
         TYPE=$(echo "$TYPE" | awk '{print tolower($0)}')
         if [[ $TYPE != 'image' && $TYPE != 'plugin' ]]; then
-            printf "The type value %s is invalid.  Must be image or plugin!\\n" "${TYPE}" >&2
+            printf 'The type value %s is invalid. Must be image or plugin!\n' "${TYPE}" >&2
             usage_get_docker_registry_api_token
             return 1
         fi                
@@ -214,7 +215,7 @@ function get_docker_registry_api_token() {
     HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
     if [[ "$HTTP_CODE" != "200" ]]; then
         printf 'Unable to get an authorization token!\n' >&2
-        printf "%s/token?service=%s&scope=repository(%s):%s:pull\\n" "${DOCKER_REGISTRY_AUTH_ENDPOINT}" "${DOCKER_REGISTRY_SERVICE}" "${TYPE}" "${DOCKER_REPO}" >&2
+        printf '%s/token?service=%s&scope=repository(%s):%s:pull\n' "${DOCKER_REGISTRY_AUTH_ENDPOINT}" "${DOCKER_REGISTRY_SERVICE}" "${TYPE}" "${DOCKER_REPO}" >&2
         print_docker_registry_api_error "${OUTPUT}"
         return 1
     else
@@ -248,7 +249,7 @@ function get_docker_repo_tags() {
     local INSECURE=''
 
     local OPTIND opt r t k h
-    while getopts "r:t:kh" opt; do
+    while getopts ":r:t:kh" opt; do
         case "${opt}" in
             r)                                          # -r Docker Repo
                 DOCKER_REPO=$OPTARG
@@ -264,6 +265,7 @@ function get_docker_repo_tags() {
                 return 1
                 ;;
             \?)
+                printf 'Invalid option: -%s\n' "${OPTARG}" >&2
                 usage_get_docker_repo_tags
                 return 1
                 ;;
@@ -278,7 +280,7 @@ function get_docker_repo_tags() {
     else
         TYPE=$(echo "$TYPE" | awk '{print tolower($0)}')
         if [[ $TYPE != 'image' && $TYPE != 'plugin' ]]; then
-            printf "The type value %s is invalid.  Must be image or plugin!\\n" "${TYPE}" >&2
+            printf 'The type value %s is invalid.  Must be image or plugin!\n' "${TYPE}" >&2
             usage_get_docker_repo_tags
             return 1
         fi                
@@ -348,7 +350,7 @@ function get_docker_repo_tags() {
     HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
     if [[ "$HTTP_CODE" != "200" ]]; then
         printf 'Unable to get the tags for the Docker Repo %s!\n' "${DOCKER_REPO}" >&2 
-        printf "%s/v2/%s/tags/list\\n" "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" >&2
+        printf '%s/v2/%s/tags/list\n' "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" >&2
         print_docker_registry_api_error "${OUTPUT}"
         return 1
     else
@@ -382,7 +384,7 @@ function get_docker_image_content_digest() {
     local INSECURE=''
 
     local OPTIND opt i t k h
-    while getopts "i:t:kh" opt; do
+    while getopts ":i:t:kh" opt; do
         case "${opt}" in
             i)                                          # -i Docker Image
                 DOCKER_IMAGE=$OPTARG
@@ -398,6 +400,7 @@ function get_docker_image_content_digest() {
                 return 1
                 ;;
             \?)
+                printf 'Invalid option: -%s\n' "${OPTARG}" >&2
                 usage_get_docker_image_content_digest
                 return 1
                 ;;
@@ -412,7 +415,7 @@ function get_docker_image_content_digest() {
     else
         TYPE=$(echo "$TYPE" | awk '{print tolower($0)}')
         if [[ $TYPE != 'image' && $TYPE != 'plugin' ]]; then
-            printf "The type value %s is invalid.  Must be image or plugin!\\n" "${TYPE}" >&2
+            printf 'The type value %s is invalid.  Must be image or plugin!\n' "${TYPE}" >&2
             usage_get_docker_image_content_digest
             return 1
         fi                
@@ -495,14 +498,14 @@ function get_docker_image_content_digest() {
     HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
     if [[ "$HTTP_CODE" != "200" ]]; then
         printf 'Unable to get the base layer digest for the Docker Image %s!\n' "${DOCKER_REPO}:${DOCKER_IMAGE_TAG}" >&2 
-        printf "%s/v2/%s/manifests/%s\\n" "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" "${DOCKER_IMAGE_TAG}" >&2
+        printf '%s/v2/%s/manifests/%s\n' "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" "${DOCKER_IMAGE_TAG}" >&2
         print_docker_registry_api_error "${OUTPUT}"
         return 1
     else
         # Print out the Docker Image Content Digest
         local DOCKER_IMAGE_CONTENT_DIGEST
         DOCKER_IMAGE_CONTENT_DIGEST=$(echo "$OUTPUT" | grep 'Docker-Content-Digest:' | awk '{print $NF}' | sed 's|[[:space:]]*||g')
-        printf "%s\\n" "${DOCKER_IMAGE_CONTENT_DIGEST}"
+        printf '%s\n' "${DOCKER_IMAGE_CONTENT_DIGEST}"
         return 0
     fi
 }
@@ -530,7 +533,7 @@ function get_docker_image_manifest() {
     local INSECURE=''
 
     local OPTIND opt i t k h
-    while getopts "i:t:kh" opt; do
+    while getopts ":i:t:kh" opt; do
         case "${opt}" in
             i)                                          # -i Docker Image
                 DOCKER_IMAGE=$OPTARG
@@ -546,6 +549,7 @@ function get_docker_image_manifest() {
                 return 1
                 ;;
             \?)
+                printf 'Invalid option: -%s\n' "${OPTARG}" >&2
                 usage_get_docker_image_manifest
                 return 1
                 ;;
@@ -560,7 +564,7 @@ function get_docker_image_manifest() {
     else
         TYPE=$(echo "$TYPE" | awk '{print tolower($0)}')
         if [[ $TYPE != 'image' && $TYPE != 'plugin' ]]; then
-            printf "The type value %s is invalid.  Must be image or plugin!\\n" "${TYPE}" >&2
+            printf 'The type value %s is invalid.  Must be image or plugin!\n' "${TYPE}" >&2
             usage_get_docker_image_manifest
             return 1
         fi                
@@ -643,7 +647,7 @@ function get_docker_image_manifest() {
     HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
     if [[ "$HTTP_CODE" != "200" ]]; then
         printf 'Unable to get the Docker Image manifest for the Docker Image %s!\n' "${DOCKER_REPO}:${DOCKER_IMAGE_TAG}" >&2 
-        printf "%s/v2/%s/manifests/%s\\n" "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" "${DOCKER_IMAGE_TAG}" >&2
+        printf '%s/v2/%s/manifests/%s\n' "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" "${DOCKER_IMAGE_TAG}" >&2
         print_docker_registry_api_error "${OUTPUT}"
         return 1
     else
@@ -678,7 +682,7 @@ function get_docker_image_manifest_list() {
     local INSECURE=''
 
     local OPTIND opt i t k h
-    while getopts "i:t:kh" opt; do
+    while getopts ":i:t:kh" opt; do
         case "${opt}" in
             i)                                          # -i Docker Image
                 DOCKER_IMAGE=$OPTARG
@@ -694,6 +698,7 @@ function get_docker_image_manifest_list() {
                 return 1
                 ;;
             \?)
+                printf 'Invalid option: -%s\n' "${OPTARG}" >&2
                 usage_get_docker_image_manifest_list
                 return 1
                 ;;
@@ -708,7 +713,7 @@ function get_docker_image_manifest_list() {
     else
         TYPE=$(echo "$TYPE" | awk '{print tolower($0)}')
         if [[ $TYPE != 'image' && $TYPE != 'plugin' ]]; then
-            printf "The type value %s is invalid.  Must be image or plugin!\\n" "${TYPE}" >&2
+            printf 'The type value %s is invalid.  Must be image or plugin!\n' "${TYPE}" >&2
             usage_get_docker_image_manifest_list
             return 1
         fi                
@@ -791,7 +796,7 @@ function get_docker_image_manifest_list() {
     HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
     if [[ "$HTTP_CODE" != "200" ]]; then
         printf 'Unable to get the Docker Image Manifest List for the Docker Image %s!\n' "${DOCKER_REPO}:${DOCKER_IMAGE_TAG}" >&2 
-        printf "%s/v2/%s/manifests/%s\\n" "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" "${DOCKER_IMAGE_TAG}" >&2
+        printf '%s/v2/%s/manifests/%s\n' "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" "${DOCKER_IMAGE_TAG}" >&2
         print_docker_registry_api_error "${OUTPUT}"
         return 1
     else
@@ -825,7 +830,7 @@ function get_docker_image_config_blob() {
     local INSECURE=''
 
     local OPTIND opt i t k h
-    while getopts "i:t:kh" opt; do
+    while getopts ":i:t:kh" opt; do
         case "${opt}" in
             i)                                          # -i Docker Image
                 DOCKER_IMAGE=$OPTARG
@@ -841,6 +846,7 @@ function get_docker_image_config_blob() {
                 return 1
                 ;;
             \?)
+                printf 'Invalid option: -%s\n' "${OPTARG}" >&2
                 usage_get_docker_image_config_blob
                 return 1
                 ;;
@@ -855,7 +861,7 @@ function get_docker_image_config_blob() {
     else
         TYPE=$(echo "$TYPE" | awk '{print tolower($0)}')
         if [[ $TYPE != 'image' && $TYPE != 'plugin' ]]; then
-            printf "The type value %s is invalid.  Must be image or plugin!\\n" "${TYPE}" >&2
+            printf 'The type value %s is invalid.  Must be image or plugin!\n' "${TYPE}" >&2
             usage_get_docker_image_config_blob
             return 1
         fi                
@@ -950,7 +956,7 @@ function get_docker_image_config_blob() {
     HTTP_CODE=$(echo "$OUTPUT" | awk 'END{print}')
     if [[ "$HTTP_CODE" != "200" ]]; then
         printf 'Unable to get the configuration blob for the Docker Image %s!\n' "${DOCKER_REPO}:${DOCKER_IMAGE_TAG}" >&2 
-        printf "%s/v2/%s/blobs/%s\\n" "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" "${DOCKER_IMAGE_CONFIG_DIGEST}" >&2
+        printf '%s/v2/%s/blobs/%s\n' "${DOCKER_REGISTRY_API_ENDPOINT}" "${DOCKER_REPO}" "${DOCKER_IMAGE_CONFIG_DIGEST}" >&2
         print_docker_registry_api_error "${OUTPUT}"
         return 1
     else
