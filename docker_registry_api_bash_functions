@@ -639,7 +639,7 @@ function get_docker_image_manifest() {
     ########################################################################################################################################################
     # Call the Docker Registry API to retrieve the Manifest for the Docker Image.
     ########################################################################################################################################################
-    local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.plugin.v1+json'
+    local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.v2+json,application/vnd.docker.plugin.v1+json'
     local OUTPUT
     OUTPUT=$(curl -S --silent ${INSECURE:+"$INSECURE"} --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" \
     --write-out "\\n%{http_code}" "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/manifests/${DOCKER_IMAGE_TAG}")
@@ -788,7 +788,7 @@ function get_docker_image_manifest_list() {
     ########################################################################################################################################################
     # Call the Docker Registry API to retrieve the Manifest List for the Docker Image.
     ########################################################################################################################################################
-    local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json'
+    local MANIFEST_HEADER='application/vnd.docker.distribution.manifest.list.v2+json'
     local OUTPUT
     OUTPUT=$(curl -S --silent ${INSECURE:+"$INSECURE"} --header "Authorization: BEARER ${TOKEN}" --header "Accept: ${MANIFEST_HEADER}" \
     --write-out "\\n%{http_code}" "${DOCKER_REGISTRY_API_ENDPOINT}/v2/${DOCKER_REPO}/manifests/${DOCKER_IMAGE_TAG}")
