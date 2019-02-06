@@ -69,7 +69,7 @@ For more information on the Docker Registry HTTP API V2 refer to <https://docs.d
    For more details on Manifests refer to https://docs.docker.com/registry/spec/manifest-v2-2/#image-manifest-field-descriptions.
 
 5. **get_docker_image_manifest_list** - retrieves the Manifest List for a Docker Image (Multi Architecture Support). 
-   If the Docker Image does not have a Manifest list, then the Manifest is returned. 
+   If the Docker Image does not have a Manifest list, then the Manifest for the image that matches the Docker Operating System and Architecture is returned (if there is one).
    For more details on the Manifest List refer to https://docs.docker.com/registry/spec/manifest-v2-2/#manifest-list.
 
 6. **get_docker_image_config_blob** - retrieves the configuration Blob for a Docker Image.
